@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ગામ ની નોધણી</title>
+  <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-database.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+</head>
+<body>
+  <h1 class="text-center">ગામ નોધણી</h1>
+  <div class="container">
+    <form id="dataForm">
+      <label for="state">રાજ્ય :</label>
+      <select id="state" class="form-control" onchange="handleStateChange()">
+        <option value="">Select State</option>
+      </select>
+      <input type="text" class="form-control" id="newState" placeholder="Add New State" /><br />
+
+      <label for="district">જીલ્લો:</label>
+      <select id="district" class="form-control" onchange="handleDistrictChange()">
+        <option value="">Select District</option>
+      </select>
+      <input type="text" class="form-control" id="newDistrict" placeholder="Add New District" /><br />
+
+      <label for="taluka">તાલુકો:</label>
+      <select id="taluka" class="form-control" onchange="handleTalukaChange()">
+        <option value="">Select Taluka</option>
+      </select>
+      <input type="text" class="form-control" id="newTaluka" placeholder="Add New Taluka" /><br />
+
+      <label for="village">ગામ:</label>
+      <select id="village" class="form-control" onchange="handleVillageChange()">
+        <option value="">Select Village</option>
+      </select>
+      <input type="text" class="form-control" id="villageName" placeholder="અહી ગામ નું નામ લખો" /><br />
+
+      <button type="button" class="btn btn-success" onclick="submitData()">Submit</button>
+    </form>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCbdd4NhpHdRUTuXXx8GRs5v1hXJBHYGMI",
+      authDomain: "test-app.firebaseapp.com",
+      databaseURL: "https://test-app-57c54-default-rtdb.firebaseio.com",
+      projectId: "test-app-57c54",
+      storageBucket: "test-app-57c54.firebasestorage.app",
+      messagingSenderId: "983642645709",
+      appId: "1:983642645709:android:8f3137ae6b6717396b7584"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    let selectedVillageId = null;
+
+    function loadDropdown(level, path) {
+      db.ref(`Area/${path}`).once('value', snapshot => {
+        const data = snapshot.val();
+        const dropdown = document.getElementById(level);
+        dropdown.innerHTML = '<option value="">Select ' + level.charAt(0).toUpperCase() + level.slice(1) + '</option>';
+        
+        if (data) {
+          Object.keys(data).forEach(key => {
+            dropdown.innerHTML += `<option value="${key}">${key}</option>`;
+          });
+        }
+      });
+    }
+
+    function loadVillageDropdown(path) {
+      db.ref(`Area/${path}`).once('value', snapshot => {
+        const data = snapshot.val();
+        const dropdown = document.getElementById('village');
+        dropdown.innerHTML = '<option value="">Select Village</option>';
+        
+        if (data) {
+          Object.entries(data).forEach(([key, value]) => {
+            dropdown.innerHTML += `<option value="${key}">${value}</option>`;
+          });
+        }
+      });
+    }
+
+    function handleStateChange() {
+      const state = document.getElementById('state').value;
+      document.getElementById('newState').style.display = state ? 'none' : 'block';
+      loadDropdown('district', state);
+    }
+
+    function handleDistrictChange() {
+      const state = document.getElementById('state').value;
+      const district = document.getElementById('district').value;
+      document.getElementById('newDistrict').style.display = district ? 'none' : 'block';
+      loadDropdown('taluka', `${state}/${district}`);
+    }
+
+    function handleTalukaChange() {
+      const state = document.getElementById('state').value;
+      const district = document.getElementById('district').value;
+      const taluka = document.getElementById('taluka').value;
+      document.getElementById('newTaluka').style.display = taluka ? 'none' : 'block';
+      loadVillageDropdown(`${state}/${district}/${taluka}`);
+    }
+
+    function handleVillageChange() {
+      const villageDropdown = document.getElementById('village');
+      const villageInput = document.getElementById('villageName');
+      selectedVillageId = villageDropdown.value;
+      villageInput.value = villageDropdown.options[villageDropdown.selectedIndex].text;
+      villageInput.style.display = selectedVillageId ? 'none' : 'block';
+    }
+
+function submitData() {
+  const state = document.getElementById('state').value || document.getElementById('newState').value;
+  const district = document.getElementById('district').value || document.getElementById('newDistrict').value;
+  const taluka = document.getElementById('taluka').value || document.getElementById('newTaluka').value;
+  const village = document.getElementById('villageName').value;
+
+  if (!state || !district || !taluka || (!village && !selectedVillageId)) {
+    alert('Please fill all fields');
+    return;
+  }
+
+  const dataPath = `Area/${state}/${district}/${taluka}`;
+  const data = {};
+
+  if (selectedVillageId) {
+    data[selectedVillageId] = village;
+  } else {
+    const villageId = `VLG${Math.floor(1000 + Math.random() * 9000)}`;
+    data[villageId] = village;
+  }
+
+  db.ref(dataPath).update(data)
+    .then(() => {
+      alert('Data submitted successfully');
+      document.getElementById('dataForm').reset(); // Reset the form after successful submission
+    })
+    .catch(error => alert('Error: ' + error.message));
+}
+    loadDropdown('state', '');
+  </script>
+  <script>
+  document.addEventListener("contextmenu", function(event) {
+    event.preventDefault(); // Disable right-click
+  });
+
+  document.addEventListener("keydown", function(event) {
+    if (event.ctrlKey && (event.key === "u" || event.key === "U" || event.key === "s" || event.key === "i" || event.key === "j" || event.key === "c" || event.key === "k" || event.key === "h" || event.key === "e")) {
+      event.preventDefault();
+    }
+    if (event.key === "F12") {
+      event.preventDefault();
+    }
+  });
+</script>
+</body>
+</html>

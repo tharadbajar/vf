@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add User</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+	    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	 <link href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-database.js"></script>
+        <script href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <style>
+	 body {
+        font-family: "Hind Vadodara", sans-serif;
+		  font-weight: 500;
+    }
+	    .form-group {
+         margin-bottom: 15px;
+        }
+		.btn-primary {
+    margin-top: 5px;
+        }
+		.form-group label {
+    display: block;
+    margin-bottom: 5px; /* Increase space between label and input box */
+    font-weight: bold; /* Optionally make labels bold */
+         }
+        .btn-primary {
+            background-color:  gray;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+        }
+	    .btn-new {
+            background-color: gray;
+            color: white;
+            border: black;
+            padding: 12px 24px;
+            font-size: 16px;
+        }
+		.btn-new:hover {
+            background-color: blue;
+			color: white;
+        }
+        .btn-selected {
+            background-color: blue; /* Selected blue */
+		}	
+        .btn-group-custom {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px; /* Space Between Buttons */
+            justify-content: center;
+        }
+		.form-title {
+      background-color: gray;
+      color: white;
+      text-align: center;
+      padding: 10px;
+      font-size: 24px;
+      font-weight: 800;
+	  margin-bottom: 20px
+	  border-radius: 8px;
+    }
+    </style>
+</head>
+<body>
+    <h2 class="form-title">ચોપડા નોધણી 2025</h2>
+
+    <div class="container">
+        <div class="col-sm-14" style="border: 0px solid gray; margin-bottom: 70px; border-radius: 8px; gap: 20px; mb-8;">
+            <form id="notebookForm" onsubmit="return createData(event)">
+                <div class="form-group">
+                    <label for="name">વિદ્યાર્થીનું પુરૂ નામ:</label>
+                    <input type="text" class="form-control" id="name" placeholder="પોતાનું નામ પિતાનું નામ અટક" name="name" required>
+                      </div>
+                
+                      <div class="form-group">
+                      <label for="std">ધોરણ:</label>
+                      <select class="form-control" id="std" name="std" required>
+                        <option value="">ધોરણ પસંદ કરો</option>
+                        <option value="બાળ વાટીકા">બાળ વાટીકા</option>
+                        <option value="ધોરણ - 1">ધોરણ - 1</option>
+                        <option value="ધોરણ - 2">ધોરણ - 2</option>
+                        <option value="ધોરણ - 3">ધોરણ - 3</option>
+                        <option value="ધોરણ - 4">ધોરણ - 4</option>
+                        <option value="ધોરણ - 5">ધોરણ - 5</option>
+                        <option value="ધોરણ - 6">ધોરણ - 6</option>
+                        <option value="ધોરણ - 7">ધોરણ - 7</option>
+                        <option value="ધોરણ - 8">ધોરણ - 8</option>
+                        <option value="ધોરણ - 9">ધોરણ - 9</option>
+                        <option value="ધોરણ - 10">ધોરણ - 10</option>
+                        <option value="ધોરણ - 11">ધોરણ - 11</option>
+                        <option value="ધોરણ - 12">ધોરણ - 12</option>
+                        <option value="કોલેજ">કોલેજ</option>
+                       </select>
+                        </div>
+                  <!-- Qty Selection -->
+				   <div class="form-group">
+                      <label for="qty">કેટલા ચોપડા લેવા છે? :</label>
+                      <select class="form-control" id="qty" name="qty" required>
+                        <option value="">સંખ્યા પસંદ કરો</option>
+                        <option value="6">6</option>
+                        <option value="12">12</option>
+                        <option value="18">18</option>
+                        <option value="24">24</option>
+                       </select>
+                        </div>
+				
+                <div class="form-group">
+                    <label for="state">રાજ્ય:</label>
+                    <select class="form-control" id="state" name="state" onchange="loadDistricts()" required>
+                        <option value="">રાજ્ય પસંદ કરો</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="district">જીલ્લો:</label>
+                    <select class="form-control" id="district" name="district" onchange="loadTalukas()" required>
+                        <option value="">જીલ્લો</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="taluka">તાલુકો:</label>
+                    <select class="form-control" id="taluka" name="taluka" onchange="loadVillages()" required>
+                        <option value="">તાલુકો</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="village">ગામ:</label>
+                    <select class="form-control" id="village" name="village" required>
+                        <option value="">ગામ</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="mobile">મોબાઈલ નંબર:</label>
+                    <input type="tel" class="form-control" id="mobile" placeholder="મોબાઈલ નંબર લખો" name="mobile" maxlength="10" pattern="[0-9]{10}" required>
+                </div>
+				
+        <!-- Location Selection -->
+               			
+					  <div class="form-group">
+                      <label for="location">ચોપડા મેળવવાનું સ્થાન:</label>
+                      <select class="form-control" id="location" name="location" required>
+                        <option value="">સ્થાન પસંદ કરો</option>
+                        <option value="ડીસા">ડીસા</option>
+                        <option value="મોટા કાપરા">મોટા કાપરા</option>
+                        <option value="લાખણી">લાખણી</option>
+                        <option value="થરાદ">થરાદ</option>
+						<option value="દિયોદર">દિયોદર</option>
+						<option value="પાલડી">પાલડી</option>
+                       </select>
+                        </div> 
+                   
+                </div>	
+				
+				
+				
+				
+
+                <div class="form-group" style="display: flex; align-items: center;">
+    <input type="checkbox" id="terms" name="terms" required style="margin-right: 20px;">
+    <label for="terms">વિશ્વકર્મા ફાઉન્ડેશન ના <a href="https://sites.google.com/view/vishwakarmafoundation/tc">નિયમો અને શરતો</a> મને મંજુર છે.</label>
+</div>
+        
+				<div class="d-flex justify-content-center mt-3">
+    <button type="submit" class="btn btn-primary w-75">Submit</button>
+</div>
+<br>
+            </form>
+        </div>
+    </div>
+	<!-- Popup (Modal) -->
+<div class="modal fade" id="progressModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">તમારી વિગતો મોકલી રહ્યા છીએ ....</h5>
+            </div>
+            <div class="modal-body text-center">
+                <div class="progress">
+                    <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%;"></div>
+                </div>
+                <p class="mt-3">કૃપા કરીને રાહ જુઓ ....</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCbdd4NhpHdRUTuXXx8GRs5v1hXJBHYGMI",
+            authDomain: "test-app.firebaseapp.com",
+            databaseURL: "https://test-app-57c54-default-rtdb.firebaseio.com",
+            projectId: "test-app-57c54",
+            storageBucket: "test-app-57c54.firebasestorage.app",
+            messagingSenderId: "983642645709",
+            appId: "1:983642645709:android:8f3137ae6b6717396b7584",
+        };
+        firebase.initializeApp(firebaseConfig);
+
+        function generateKey() {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let key = '';
+            for (let i = 0; i < 6; i++) {
+                key += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            return key;
+        }
+
+        function loadStates() {
+            const stateSelect = document.getElementById('state');
+            firebase.database().ref('Area').once('value', function(snapshot) {
+                snapshot.forEach(function(childSnapshot) {
+                    const stateKey = childSnapshot.key;
+                    const option = document.createElement('option');
+                    option.value = stateKey;
+                    option.textContent = stateKey;
+                    stateSelect.appendChild(option);
+                });
+            });
+        }
+
+                function loadDistricts() {
+            const stateKey = document.getElementById('state').value;
+            const districtSelect = document.getElementById('district');
+            districtSelect.innerHTML = '<option value="">જીલ્લો પસંદ કરો</option>';
+            firebase.database().ref(`Area/${stateKey}`).once('value', function(snapshot) {
+                snapshot.forEach(function(childSnapshot) {
+                    const districtKey = childSnapshot.key;
+                    const option = document.createElement('option');
+                    option.value = districtKey;
+                    option.textContent = districtKey;
+                    districtSelect.appendChild(option);
+                });
+            });
+        }
+
+        function loadTalukas() {
+            const stateKey = document.getElementById('state').value;
+            const districtKey = document.getElementById('district').value;
+            const talukaSelect = document.getElementById('taluka');
+            talukaSelect.innerHTML = '<option value="">તાલુકો પસંદ કરો</option>';
+            firebase.database().ref(`Area/${stateKey}/${districtKey}`).once('value', function(snapshot) {
+                snapshot.forEach(function(childSnapshot) {
+                    const talukaKey = childSnapshot.key;
+                    const option = document.createElement('option');
+                    option.value = talukaKey;
+                    option.textContent = talukaKey;
+                    talukaSelect.appendChild(option);
+                });
+            });
+        }
+
+        function loadVillages() {
+            const stateKey = document.getElementById('state').value;
+            const districtKey = document.getElementById('district').value;
+            const talukaKey = document.getElementById('taluka').value;
+            const villageSelect = document.getElementById('village');
+            villageSelect.innerHTML = '<option value="">ગામ પસંદ કરો</option>';
+            firebase.database().ref(`Area/${stateKey}/${districtKey}/${talukaKey}`).once('value', function(snapshot) {
+                snapshot.forEach(function(childSnapshot) {
+                    const villageKey = childSnapshot.key;
+                    const villageValue = childSnapshot.val();
+                    const option = document.createElement('option');
+                    option.value = villageKey;
+                    option.textContent = villageValue;
+                    villageSelect.appendChild(option);
+                });
+            });
+        }
+         
+		
+        function createData(event) {
+            event.preventDefault();
+            const name = document.getElementById('name').value;
+            const std = document.getElementById('std').value;
+            const qty = document.getElementById('qty').value;
+            const state = document.getElementById('state').value;
+            const district = document.getElementById('district').value;
+            const taluka = document.getElementById('taluka').value;
+            const village = document.getElementById('village').value;
+            const mobile = document.getElementById('mobile').value;
+			const location = document.getElementById('location').value;
+            const key = generateKey();
+			  // Combine address into a single object
+    const address = {
+        state,
+        district,
+        taluka,
+        village
+    };
+	// Generate current date and time in ddmmyyyy hh:mm format
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const year = now.getFullYear();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const entrydt = `${day}/${month}/${year} ${hours}:${minutes}`;
+
+            if (!document.getElementById('terms').checked) {
+                alert('કૃપા કરીને નિયમો અને શરતો મંજુર કરો.');
+                return;
+            }
+
+            const newUser = { name, std, qty, address, mobile, location, key, entrydt };
+
+            firebase.database().ref("notebook/" + key).set(newUser).then(() => {
+                document.getElementById('notebookForm').reset();
+				}).catch((error) => {
+                alert('Error: ' + error.message);
+            });
+        }
+
+        window.onload = function() {
+            loadStates();
+        };
+    </script>
+	<script>
+        // Disable Right-Click
+        document.addEventListener("contextmenu", (event) => event.preventDefault());
+
+        // Disable Ctrl+U, Ctrl+Shift+I, Ctrl+Shift+J, F12
+        document.addEventListener("keydown", (event) => {
+            if (event.ctrlKey && (event.key === "u" || event.key === "U" || event.key === "i" || event.key === "I" || event.key === "j" || event.key === "J")) {
+                event.preventDefault();
+            }
+            if (event.key === "F12") {
+                event.preventDefault();
+            }
+        });
+		
+    </script>
+	
+
+<script>
+    document.getElementById("notebookForm").addEventListener("submit", function(event) {
+        event.preventDefault(); // Prevent default form submission
+        
+        // Show popup
+        var myModal = new bootstrap.Modal(document.getElementById('progressModal'));
+        myModal.show();
+
+        let progressBar = document.getElementById("progress-bar");
+        progressBar.style.width = "0%";
+
+        // Simulate data submission
+        let progress = 0;
+        let interval = setInterval(() => {
+            progress += 10;
+            progressBar.style.width = progress + "%";
+
+             if (progress >= 100) {
+      clearInterval(interval);
+
+      // Hide modal after 1 second
+                setTimeout(() => {
+                    myModal.hide();
+                    alert("તમારા ચોપડા ની નોધણી થઇ ગઈ છે!");
+                }, 1000);
+    }
+    }, 300); 
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+	<script>
+        // Disable Right-Click
+        document.addEventListener("contextmenu", (event) => event.preventDefault());
+
+        // Disable Ctrl+U, Ctrl+Shift+I, Ctrl+Shift+J, F12
+        document.addEventListener("keydown", (event) => {
+            if (event.ctrlKey && (event.key === "u" || event.key === "U" || event.key === "i" || event.key === "I" || event.key === "j" || event.key === "J")) {
+                event.preventDefault();
+            }
+            if (event.key === "F12") {
+                event.preventDefault();
+            }
+        });
+		
+    </script>
+
+</body>
+</html>

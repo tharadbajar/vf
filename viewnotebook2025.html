@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User List</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    .title-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 50px;
+      background-color: #333;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0px 20px;
+      z-index: 1000;
+    }
+    .title-text {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .search-box {
+      padding: 5px;
+      margin-right: 10px;
+      font-size: 16px;
+      color: black;
+      background-color: white;
+      border-radius: 25px;
+      border: 0px;
+      width: 30%;
+    }
+    .content {
+      margin-top: 60px;
+      padding: 10px;
+    }
+    .location-title {
+      font-size: 18px;
+      font-weight: bold;
+	  text-align: center;
+      margin-top: 20px;
+      background-color: #f2f2f2;
+      padding: 10px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="title-bar">
+   <div class="title-text" id="titleBar">ચોપડા રજીસ્ટ્રેશન 2025</div>
+    <input type="text" class="search-box" placeholder="Search..." id="myInput" onkeyup="myFunction()">
+  </div>
+
+  <div class="content" id="userTables"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-storage.js"></script>
+
+  <script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyCbdd4N...",
+        authDomain: "test-app.firebaseapp.com",
+        databaseURL: "https://test-app-57c54-default-rtdb.firebaseio.com",
+        projectId: "test-app-57c54",
+        storageBucket: "test-app-57c54.firebasestorage.app",
+        messagingSenderId: "983642645709",
+        appId: "1:983642645709:android:8f3137ae6b6717396b7584",
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    function fetchVillageName(villageId, callback) {
+        if (!villageId) {
+            callback('N/A');
+            return;
+        }
+        firebase.database().ref('Area').once('value')
+            .then(snapshot => {
+                let villageName = 'N/A';
+                snapshot.forEach(stateSnapshot => {
+                    stateSnapshot.forEach(districtSnapshot => {
+                        districtSnapshot.forEach(talukaSnapshot => {
+                            const villages = talukaSnapshot.val();
+                            if (villages && villages[villageId]) {
+                                villageName = villages[villageId];
+                            }
+                        });
+                    });
+                });
+                callback(villageName);
+            })
+            .catch(error => {
+                console.error('Error fetching village name:', error);
+                callback('N/A');
+            });
+    }
+
+    firebase.database().ref("notebook/").on("value", function (snapshot) {
+        document.getElementById("userTables").innerHTML = "";
+        let locationGroups = {};
+
+        snapshot.forEach(childSnapshot => {
+            const childData = childSnapshot.val();
+            const location = childData.location || 'Unknown';
+
+            if (!locationGroups[location]) {
+                locationGroups[location] = [];
+            }
+            locationGroups[location].push(childData);
+        });
+
+        for (let location in locationGroups) {
+            let totalQty = 0;
+            let tableHTML = `<div class="location-title">${location}</div>
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Datetime</th>
+                            <th>Name</th>
+                            <th>ગામ</th>
+                            <th>std</th>
+                            <th>qty</th>
+                            <th>Mobile</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-${location.replace(/\s+/g, '')}">
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="4" class="text-right"><b>Total Qty:</b></td>
+                            <td id="totalQty-${location.replace(/\s+/g, '')}"><b>0</b></td>
+                            <td colspan="2"></td>
+                        </tr>
+                    </tfoot>
+                </table>`;
+
+            document.getElementById("userTables").insertAdjacentHTML('beforeend', tableHTML);
+
+            locationGroups[location].forEach(user => {
+                fetchVillageName(user.address.village, function(villageName) {
+                    let qty = parseInt(user.qty) || 0;
+                    totalQty += qty;
+                    let rowHTML = `
+                        <tr>
+                            <td>${user.entrydt || 'N/A'}</td>
+                            <td>${user.name || 'N/A'}</td>
+                            <td>${villageName}</td>
+                            <td>${user.std || 'N/A'}</td>
+                            <td>${qty}</td>
+                            <td>${user.mobile || 'N/A'}</td>
+                            </tr>`;
+                    document.querySelector(`#tbody-${location.replace(/\s+/g, '')}`).insertAdjacentHTML('beforeend', rowHTML);
+                    document.getElementById(`totalQty-${location.replace(/\s+/g, '')}`).innerHTML = `<b>${totalQty}</b>`;
+                });
+            });
+        }
+    });
+  </script>
+<script>
+  function myFunction() {
+      var input, filter, tables, tr, td, i, j, txtValue;
+      input = document.getElementById("myInput");
+      filter = input.value.toUpperCase();
+      tables = document.querySelectorAll(".table");
+      let totalQtyOverall = 0; // Store total qty for all matched results
+
+      tables.forEach(table => {
+          let tbody = table.querySelector("tbody");
+          let title = table.previousElementSibling; // Location title
+          let totalQtyCell = table.querySelector("tfoot td[id^='totalQty-']");
+          tr = tbody.getElementsByTagName("tr");
+          let hasData = false;
+          let totalQty = 0; // Store total quantity for visible rows in this table
+
+          for (i = 0; i < tr.length; i++) {
+              let found = false;
+              td = tr[i].getElementsByTagName("td");
+
+              for (j = 0; j < td.length; j++) {
+                  if (td[j]) {
+                      txtValue = td[j].textContent || td[j].innerText;
+                      if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                          found = true;
+                          break;
+                      }
+                  }
+              }
+
+              tr[i].style.display = found ? "" : "none";
+              if (found) {
+                  hasData = true;
+                  totalQty += parseInt(tr[i].getElementsByTagName("td")[4].innerText) || 0;
+              }
+          }
+
+          // Hide table and title if no data is found
+          if (hasData) {
+              table.style.display = "";
+              if (title && title.classList.contains("location-title")) {
+                  title.style.display = "";
+              }
+              // Update total quantity for search results
+              if (totalQtyCell) {
+                  totalQtyCell.innerHTML = `<b>${totalQty}</b>`;
+              }
+              totalQtyOverall += totalQty;
+          } else {
+              table.style.display = "none";
+              if (title && title.classList.contains("location-title")) {
+                  title.style.display = "none";
+              }
+          }
+      });
+      }
+</script>
+</body>
+</html>

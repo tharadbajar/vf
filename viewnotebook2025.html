@@ -13,6 +13,26 @@
 	      body {
       -webkit-user-select: none; /* Disable text selection */
       -webkit-touch-callout: none; /* Disable long press menu */
+       display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+	  .creative-button {
+      padding: 15px 30px;
+      font-size: 18px;
+      color: white;
+      background: linear-gradient(135deg, #007bff, #00c6ff);
+      border: none;
+      border-radius: 30px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 40px;
+    }
+
+    .creative-button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
     }
 
     @media print {
@@ -116,9 +136,9 @@
   <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-database.js"></script>
   <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-storage.js"></script>
 <!-- Button to open a link -->
-<button class="location-title" onclick="window.location.href='https://tharadbajar.github.io/vf/SMReport';">
-  ટૂંકમાં રિપોર્ટ જોવા અહી ક્લિક કરો
-</button>
+	 <button class="creative-button" onclick="window.location.href='https://tharadbajar.github.io/vf/SMReport'">
+    ટૂંકમાં રિપોર્ટ જોવા અહી ક્લિક કરો
+  </button>
   <script>
     const firebaseConfig = {
         apiKey: "AIzaSyCbdd4N...",

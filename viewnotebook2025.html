@@ -3,45 +3,57 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>User List</title>
+  <title>ચોપડા રજીસ્ટ્રેશન 2025</title>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <style>
-    .title-bar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 50px;
-      background-color: #333;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0px 20px;
-      z-index: 1000;
-    }
-    .title-text {
-      font-size: 20px;
-      font-weight: bold;
-    }
-    .search-box {
-      padding: 5px;
-      margin-right: 10px;
-      font-size: 16px;
-      color: black;
-      background-color: white;
-      border-radius: 25px;
-      border: 0px;
-      width: 30%;
-    }
-    .content {
-      margin-top: 60px;
-      padding: 10px;
-    }
+.title-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #333;
+  color: white;
+  padding: 5px 20px;
+  z-index: 1000;
+}
+
+.top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bottom-row {
+  margin-top: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  color: yellow;
+  text-align: right;
+}
+
+.title-text {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.search-box {
+  padding: 5px;
+  font-size: 16px;
+  color: black;
+  background-color: white;
+  border-radius: 25px;
+  border: 0px;
+  width: 30%;
+}
+
+.content {
+  margin-top: 90px; /* increased to give space for 2 lines in title-bar */
+  padding: 10px;
+}
     .location-title {
       font-size: 18px;
       font-weight: bold;
@@ -51,14 +63,36 @@
       padding: 10px;
       border-radius: 5px;
     }
+	.grand-total-display {
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+  margin-left: 15px;
+    }
+	.total-info {
+  margin-top: 10px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: left;
+  white-space: nowrap;
+      }
   </style>
 </head>
 <body>
 
-  <div class="title-bar">
-   <div class="title-text" id="titleBar">ચોપડા રજીસ્ટ્રેશન 2025</div>
+<div class="title-bar">
+  <div class="top-row">
+    <div class="title-text" id="titleBar">ચોપડા રજીસ્ટ્રેશન 2025</div>
     <input type="text" class="search-box" placeholder="Search..." id="myInput" onkeyup="myFunction()">
   </div>
+    <div class="total-info">
+    કુલ નોધેલા ચોપડા : <span class="bottom-row" id="grandTotalQty">0</span> 
+    કુલ વિદ્યાર્થીઓ: <span class="bottom-row" id="grandTotalNames">0</span>
+  </div>
+ 
+</div>
+
 
   <div class="content" id="userTables"></div>
 
@@ -104,66 +138,73 @@
             });
     }
 
-    firebase.database().ref("notebook/").on("value", function (snapshot) {
-        document.getElementById("userTables").innerHTML = "";
-        let locationGroups = {};
+ firebase.database().ref("notebook/").orderByChild("entrydt").on("value", function (snapshot) {
+    document.getElementById("userTables").innerHTML = "";
+    let locationGroups = {};
+    let grandTotalQty = 0; // <-- Added
+	let grandTotalNames = 0;
 
-        snapshot.forEach(childSnapshot => {
-            const childData = childSnapshot.val();
-            const location = childData.location || 'Unknown';
+    snapshot.forEach(childSnapshot => {
+        const childData = childSnapshot.val();
+        const location = childData.location || 'Unknown';
 
-            if (!locationGroups[location]) {
-                locationGroups[location] = [];
-            }
-            locationGroups[location].push(childData);
-        });
-
-        for (let location in locationGroups) {
-            let totalQty = 0;
-            let tableHTML = `<div class="location-title">${location}</div>
-                <table class="table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th>Datetime</th>
-                            <th>Name</th>
-                            <th>ગામ</th>
-                            <th>std</th>
-                            <th>qty</th>
-                            <th>Mobile</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbody-${location.replace(/\s+/g, '')}">
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="4" class="text-right"><b>Total Qty:</b></td>
-                            <td id="totalQty-${location.replace(/\s+/g, '')}"><b>0</b></td>
-                            <td colspan="2"></td>
-                        </tr>
-                    </tfoot>
-                </table>`;
-
-            document.getElementById("userTables").insertAdjacentHTML('beforeend', tableHTML);
-
-            locationGroups[location].forEach(user => {
-                fetchVillageName(user.address.village, function(villageName) {
-                    let qty = parseInt(user.qty) || 0;
-                    totalQty += qty;
-                    let rowHTML = `
-                        <tr>
-                            <td>${user.entrydt || 'N/A'}</td>
-                            <td>${user.name || 'N/A'}</td>
-                            <td>${villageName}</td>
-                            <td>${user.std || 'N/A'}</td>
-                            <td>${qty}</td>
-                            <td>${user.mobile || 'N/A'}</td>
-                            </tr>`;
-                    document.querySelector(`#tbody-${location.replace(/\s+/g, '')}`).insertAdjacentHTML('beforeend', rowHTML);
-                    document.getElementById(`totalQty-${location.replace(/\s+/g, '')}`).innerHTML = `<b>${totalQty}</b>`;
-                });
-            });
+        if (!locationGroups[location]) {
+            locationGroups[location] = [];
         }
+        locationGroups[location].push(childData);
     });
+
+    for (let location in locationGroups) {
+        let totalQty = 0;
+        let tableHTML = `<div class="location-title">${location}</div>
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Datetime</th>
+                        <th>Name</th>
+                        <th>ગામ</th>
+                        <th>std</th>
+                        <th>qty</th>
+                        <th>Mobile</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody-${location.replace(/\s+/g, '')}">
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="4" class="text-right"><b>Total Qty:</b></td>
+                        <td id="totalQty-${location.replace(/\s+/g, '')}"><b>0</b></td>
+                        <td colspan="2"></td>
+                    </tr>
+                </tfoot>
+            </table>`;
+
+        document.getElementById("userTables").insertAdjacentHTML('beforeend', tableHTML);
+
+        locationGroups[location].forEach(user => {
+            fetchVillageName(user.address.village, function(villageName) {
+                let qty = parseInt(user.qty) || 0;
+                totalQty += qty;
+                grandTotalQty += qty; // <-- Added
+				grandTotalNames++;
+                let rowHTML = `
+                    <tr>
+                        <td>${user.entrydt || 'N/A'}</td>
+                        <td>${user.name || 'N/A'}</td>
+                        <td>${villageName}</td>
+                        <td>${user.std || 'N/A'}</td>
+                        <td>${qty}</td>
+                        <td>${user.mobile || 'N/A'}</td>
+                        </tr>`;
+                document.querySelector(`#tbody-${location.replace(/\s+/g, '')}`).insertAdjacentHTML('beforeend', rowHTML);
+                document.getElementById(`totalQty-${location.replace(/\s+/g, '')}`).innerHTML = `<b>${totalQty}</b>`;
+                // Update grand total display
+                document.getElementById("grandTotalQty").innerText = grandTotalQty;
+                document.getElementById("grandTotalNames").innerText = grandTotalNames;
+            });
+        });
+    }
+});
   </script>
 <script>
   function myFunction() {

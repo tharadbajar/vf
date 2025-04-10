@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Notebook Summary</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"/>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+  <style>
+   body {
+      -webkit-user-select: none; /* Disable text selection */
+      -webkit-touch-callout: none; /* Disable long press menu */
+    }
+
+    @media print {
+      body {
+        display: none;
+      }
+    }
+
+    .no-screenshot {
+      background-color: black;
+      color: black;
+    }
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .title-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: #333;
+      color: white;
+     text-align: center;
+      padding: 10px 20px;
+      z-index: 1000;
+    }
+    .title-text {
+      font-size: 20px;
+      font-weight: bold;
+       text-align: center;
+    }
+    .total-info {
+      margin-top: 5px;
+      font-size: 14px;
+      font-weight: bold;
+      color: yellow;
+    }
+    .content {
+      margin-top: 60px;
+      padding: 10px;
+    }
+    .location-title {
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+      margin-top: 20px;
+      background-color: #f2f2f2;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    .table-responsive {
+      overflow-x: auto;
+    }
+    .grand-total-row {
+      font-weight: bold;
+      background-color: #d9edf7;
+    }
+  </style>
+</head>
+<body>
+
+<div class="title-bar">
+  <div class="title-text">ચોપડા રજીસ્ટ્રેશન 2025</div>
+  <div class="total-info">
+    કુલ નોધેલા ચોપડા: <span id="grandTotalQty">0</span> | કુલ વિદ્યાર્થીઓ: <span id="grandTotalNames">0</span>
+  </div>
+</div>
+
+<div class="content">
+  <div class="location-title">📚 ધોરણ પ્રમાણે સંખ્યા</div>
+  <div class="table-responsive">
+    <table class="table table-bordered" id="stdSummaryTable">
+      <thead><tr><th>ધોરણ</th><th>ચોપડા</th><th>વિદ્યાર્થીઓ </th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="location-title">📍 સેન્ટર પ્રમાણે સંખ્યા</div>
+  <div class="table-responsive">
+    <table class="table table-bordered" id="locationSummaryTable">
+      <thead><tr><th>સેન્ટર</th><th>ચોપડા</th><th>વિદ્યાર્થીઓ</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-database.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCbdd4N...",
+    authDomain: "test-app.firebaseapp.com",
+    databaseURL: "https://test-app-57c54-default-rtdb.firebaseio.com",
+    projectId: "test-app-57c54",
+    storageBucket: "test-app-57c54.appspot.com",
+    messagingSenderId: "983642645709",
+    appId: "1:983642645709:web:8f3137ae6b6717396b7584"
+  };
+  firebase.initializeApp(firebaseConfig);
+
+  async function renderSummary() {
+    const snapshot = await firebase.database().ref("notebook/").orderByChild("entrydt").once("value");
+
+    let stdSummary = {};
+    let locationSummary = {};
+    let grandTotalQty = 0;
+    let grandTotalNames = 0;
+
+    for (const child of snapshot.val() ? Object.values(snapshot.val()) : []) {
+      const location = child.location || "Unknown";
+      const std = child.std || "N/A";
+      const qty = parseInt(child.qty) || 0;
+
+      // Standard summary
+      if (!stdSummary[std]) stdSummary[std] = { qty: 0, names: 0 };
+      stdSummary[std].qty += qty;
+      stdSummary[std].names += 1;
+
+      // Location summary
+      if (!locationSummary[location]) locationSummary[location] = { qty: 0, names: 0 };
+      locationSummary[location].qty += qty;
+      locationSummary[location].names += 1;
+
+      grandTotalQty += qty;
+      grandTotalNames++;
+    }
+
+    document.getElementById("grandTotalQty").innerText = grandTotalQty;
+    document.getElementById("grandTotalNames").innerText = grandTotalNames;
+
+    // Standard order
+    const stdOrder = [
+      "બાળ વાટીકા",
+      ...Array.from({ length: 12 }, (_, i) => `ધોરણ - ${i + 1}`),
+      "કોલેજ"
+    ];
+
+    const stdTable = document.querySelector("#stdSummaryTable tbody");
+    for (let std of stdOrder) {
+      if (stdSummary[std]) {
+        stdTable.insertAdjacentHTML("beforeend", `
+          <tr>
+            <td>${std}</td>
+            <td>${stdSummary[std].qty}</td>
+            <td>${stdSummary[std].names}</td>
+          </tr>
+        `);
+      }
+    }
+    stdTable.insertAdjacentHTML("beforeend", `
+      <tr class="grand-total-row">
+        <td>Grand Total</td>
+        <td>${grandTotalQty}</td>
+        <td>${grandTotalNames}</td>
+      </tr>
+    `);
+
+    const locTable = document.querySelector("#locationSummaryTable tbody");
+    const sortedLocations = Object.entries(locationSummary)
+      .sort((a, b) => b[1].qty - a[1].qty);
+
+    for (let [loc, data] of sortedLocations) {
+      locTable.insertAdjacentHTML("beforeend", `
+        <tr>
+          <td>${loc}</td>
+          <td>${data.qty}</td>
+          <td>${data.names}</td>
+        </tr>
+      `);
+    }
+    locTable.insertAdjacentHTML("beforeend", `
+      <tr class="grand-total-row">
+        <td>Grand Total</td>
+        <td>${grandTotalQty}</td>
+        <td>${grandTotalNames}</td>
+      </tr>
+    `);
+  }
+
+  renderSummary();
+</script>
+<script>
+        // Disable Right-Click
+        document.addEventListener("contextmenu", (event) => event.preventDefault());
+
+        // Disable Ctrl+U, Ctrl+Shift+I, Ctrl+Shift+J, F12
+        document.addEventListener("keydown", (event) => {
+            if (event.ctrlKey && (event.key === "u" || event.key === "U" || event.key === "P" || event.key === "i" || event.key === "I" || event.key === "j" || event.key === "J")) {
+                event.preventDefault();
+            }
+            if (event.key === "F12") {
+                event.preventDefault();
+            }
+        });
+		
+    </script>
+	 <script>
+    // Prevent Print Shortcut (Ctrl+P or Cmd+P)
+    document.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+        e.preventDefault();
+        alert("Print not allowed!");
+      }
+    });
+
+    // Disable right-click
+    document.addEventListener('contextmenu', event => event.preventDefault());
+  </script>
+</body>
+</html>

@@ -10,6 +10,21 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <style>
+	      body {
+      -webkit-user-select: none; /* Disable text selection */
+      -webkit-touch-callout: none; /* Disable long press menu */
+    }
+
+    @media print {
+      body {
+        display: none;
+      }
+    }
+
+    .no-screenshot {
+      background-color: black;
+      color: black;
+    }
 .title-bar {
   position: fixed;
   top: 0;
@@ -264,5 +279,17 @@
       });
       }
 </script>
+<script>
+    // Prevent Print Shortcut (Ctrl+P or Cmd+P)
+    document.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+        e.preventDefault();
+        alert("Print not allowed!");
+      }
+    });
+
+    // Disable right-click
+    document.addEventListener('contextmenu', event => event.preventDefault());
+  </script>
 </body>
 </html>

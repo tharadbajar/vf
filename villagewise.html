@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ચોપડા રજીસ્ટ્રેશન 2025</title>
+
+  <!-- Bootstrap -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Hindi Vadodara Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Vadodara&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Hind Vadodara', sans-serif;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .title-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: #333;
+      color: white;
+      padding: 5px 20px;
+      z-index: 1000;
+	  text-align: center;
+    }
+
+    .top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .title-text {
+      font-size: 20px;
+      font-weight: bold;
+	  text-align: center;
+    }
+    .bottom-row {
+      margin-top: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      color: yellow;
+      text-align: center;
+    }
+
+    .total-info {
+      margin-top: 10px;
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+     color: yellow;
+	 text-align: center;
+    }
+
+    .content {
+      margin-top: 65px;
+      padding: 5px;
+    }
+
+    .toggle-title {
+      cursor: pointer;
+      padding: 10px;
+      background-color: #e6f0ff;
+      margin-top: 10px;
+      font-weight: bold;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    .hidden-content {
+      display: none;
+      padding-left: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      border: 1px solid #999;
+      padding: 8px;
+      text-align: left;
+    }
+
+    tfoot td {
+      font-weight: bold;
+      background-color: #f0f0f0;
+    }
+
+    .creative-button {
+      padding: 12px 20px;
+      font-size: 18px;
+      color: white;
+      background: linear-gradient(135deg, #007bff, #00c6ff);
+      border: none;
+      border-radius: 30px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin: 20px auto 40px;
+      display: block;
+    }
+
+    .creative-button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    @media print {
+      body {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="title-bar">
+  <div class="top-row">
+    <div class="title-text">તાલુકા અને ગામ પ્રમાણે ચોપડા રજીસ્ટ્રેશન 2025</div>
+  </div>
+  <div class="total-info">
+    કુલ નોધેલા ચોપડા : <span id="grandTotalQty">0</span> |
+    કુલ વિદ્યાર્થીઓ: <span id="grandTotalNames">0</span>
+  </div>
+</div>
+
+<div class="content" id="userTables"></div>
+
+<button class="creative-button" onclick="window.location.href='https://tharadbajar.github.io/vf/SMReport'">
+  ટૂંકમાં રિપોર્ટ જોવા અહી ક્લિક કરો
+</button>
+
+<!-- Firebase Scripts -->
+<script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-database.js"></script>
+
+<!-- Firebase Config and Data Load -->
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCbdd4N...",
+    authDomain: "test-app.firebaseapp.com",
+    databaseURL: "https://test-app-57c54-default-rtdb.firebaseio.com",
+    projectId: "test-app-57c54",
+    storageBucket: "test-app-57c54.appspot.com",
+    messagingSenderId: "983642645709",
+    appId: "1:983642645709:android:8f3137ae6b6717396b7584",
+  };
+  firebase.initializeApp(firebaseConfig);
+
+  function toggleContent(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = (el.style.display === "none" || el.style.display === "") ? "block" : "none";
+  }
+
+  firebase.database().ref("notebook").orderByChild("entrydt").once("value")
+    .then(snapshot => {
+      document.getElementById("userTables").innerHTML = "";
+      const talukaGroups = {};
+      let grandTotalQty = 0, grandTotalNames = 0;
+
+      snapshot.forEach(child => {
+        const data = child.val();
+        const taluka = (data.address && data.address.taluka) || "અજ્ઞાત";
+        const village = (data.address && data.address.village) || "અજ્ઞાત";
+
+        if (!talukaGroups[taluka]) talukaGroups[taluka] = {};
+        if (!talukaGroups[taluka][village]) talukaGroups[taluka][village] = [];
+        talukaGroups[taluka][village].push(data);
+      });
+
+      firebase.database().ref("Area").once("value").then(areaSnap => {
+        const areaData = areaSnap.val();
+
+        for (let taluka in talukaGroups) {
+          const talukaId = `taluka-${taluka.replace(/\s+/g, '')}`;
+          let html = `<div class="toggle-title" onclick="toggleContent('${talukaId}')">🏘️ <b>${taluka}</b></div><div id="${talukaId}" class="hidden-content">`;
+
+          for (let villageId in talukaGroups[taluka]) {
+            const users = talukaGroups[taluka][villageId];
+            let qtySum = 0;
+            let villageName = villageId;
+
+            for (let s in areaData) {
+              for (let d in areaData[s]) {
+                if (areaData[s][d][taluka] && areaData[s][d][taluka][villageId]) {
+                  villageName = areaData[s][d][taluka][villageId];
+                }
+              }
+            }
+
+            const villageDivId = `${talukaId}-village-${villageId}`;
+            const villageQty = users.reduce((sum, u) => sum + (parseInt(u.qty) || 0), 0);
+
+            html += `<div class="toggle-title" onclick="toggleContent('${villageDivId}')"> ${villageName} - કુલ ચોપડા : <b>${villageQty}</b></div><div id="${villageDivId}" class="hidden-content">`;
+            html += `<table><thead><tr><th>Date</th><th>Name</th><th>Std</th><th>Qty</th><th>Mobile</th></tr></thead><tbody>`;
+
+            users.forEach(u => {
+              const q = parseInt(u.qty) || 0;
+              qtySum += q;
+              grandTotalQty += q;
+              grandTotalNames++;
+              html += `<tr><td>${u.entrydt || ""}</td><td>${u.name || ""}</td><td>${u.std || ""}</td><td>${q}</td><td>${u.mobile || ""}</td></tr>`;
+            });
+
+            html += `</tbody><tfoot><tr><td colspan="3">Total</td><td colspan="2">${villageQty}</td></tr></tfoot></table>`;
+            html += `</div>`;
+          }
+
+          html += `</div>`;
+          document.getElementById("userTables").insertAdjacentHTML('beforeend', html);
+        }
+
+        document.getElementById("grandTotalQty").innerText = grandTotalQty;
+        document.getElementById("grandTotalNames").innerText = grandTotalNames;
+      });
+    });
+</script>
+
+<!-- Block Print & Right Click -->
+<script>
+  document.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+      e.preventDefault();
+      alert("Print not allowed!");
+    }
+  });
+  document.addEventListener('contextmenu', e => e.preventDefault());
+</script>
+
+</body>
+</html>

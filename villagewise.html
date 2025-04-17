@@ -48,7 +48,7 @@
     }
     .bottom-row {
       margin-top: 10px;
-      font-size: 16px;
+      font-size: 18px;
       font-weight: bold;
       color: yellow;
       text-align: center;
@@ -57,7 +57,7 @@
     .total-info {
       margin-top: 10px;
       color: #fff;
-      font-size: 16px;
+      font-size: 18px;
       font-weight: bold;
      color: yellow;
 	 text-align: center;
@@ -76,6 +76,7 @@
       font-weight: bold;
       border: 1px solid #ccc;
       border-radius: 6px;
+	   font-size: 20px;
     }
 
     .hidden-content {
@@ -93,6 +94,7 @@
       border: 1px solid #999;
       padding: 8px;
       text-align: left;
+	   font-size: 16px;
     }
 
     tfoot td {
@@ -141,8 +143,9 @@
 <div class="content" id="userTables"></div>
 
 <button class="creative-button" onclick="window.location.href='https://tharadbajar.github.io/vf/SMReport'">
-  ટૂંકમાં રિપોર્ટ જોવા અહી ક્લિક કરો
-</button>
+  ટૂંકમાં રિપોર્ટ</button>
+  <button class="creative-button" onclick="window.location.href='https://tharadbajar.github.io/vf/viewnotebook2025'">
+  સેન્ટર પ્રમાણે રિપોર્ટ</button>
 
 <!-- Firebase Scripts -->
 <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-app.js"></script>
@@ -166,7 +169,7 @@
     if (el) el.style.display = (el.style.display === "none" || el.style.display === "") ? "block" : "none";
   }
 
-  firebase.database().ref("notebook").orderByChild("entrydt").once("value")
+  firebase.database().ref("notebook").orderByChild("mobile").once("value")
     .then(snapshot => {
       document.getElementById("userTables").innerHTML = "";
       const talukaGroups = {};
@@ -205,18 +208,18 @@
             const villageDivId = `${talukaId}-village-${villageId}`;
             const villageQty = users.reduce((sum, u) => sum + (parseInt(u.qty) || 0), 0);
 
-            html += `<div class="toggle-title" onclick="toggleContent('${villageDivId}')"> ${villageName} - કુલ ચોપડા : <b>${villageQty}</b></div><div id="${villageDivId}" class="hidden-content">`;
-            html += `<table><thead><tr><th>Date</th><th>Name</th><th>Std</th><th>Qty</th><th>Mobile</th></tr></thead><tbody>`;
+            html += `<div class="toggle-title" onclick="toggleContent('${villageDivId}')"> ${villageName}  : <b>${villageQty}</b></div><div id="${villageDivId}" class="hidden-content">`;
+            html += `<table><thead><tr><th>Name</th><th>Std</th><th>Qty</th><th>Mobile</th></tr></thead><tbody>`;
 
             users.forEach(u => {
               const q = parseInt(u.qty) || 0;
               qtySum += q;
               grandTotalQty += q;
               grandTotalNames++;
-              html += `<tr><td>${u.entrydt || ""}</td><td>${u.name || ""}</td><td>${u.std || ""}</td><td>${q}</td><td>${u.mobile || ""}</td></tr>`;
+              html += `<tr><td>${u.name || ""}</td><td>${u.std || ""}</td><td>${q}</td><td>${u.mobile || ""}</td></tr>`;
             });
 
-            html += `</tbody><tfoot><tr><td colspan="3">Total</td><td colspan="2">${villageQty}</td></tr></tfoot></table>`;
+            html += `</tbody><tfoot><tr><td colspan="2">Total</td><td colspan="2">${villageQty}</td></tr></tfoot></table>`;
             html += `</div>`;
           }
 

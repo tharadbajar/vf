@@ -2,7 +2,7 @@
 <html lang="gu">
 <head>
   <meta charset="UTF-8">
-  <title>ચોપડા જાહેરાત 2025 </title>
+  <title>ચોપડા જાહેરાત 2025</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -18,7 +18,7 @@
 
     h2 {
       font-size: 22px;
-      margin-top: 40px;
+      margin-top: 10px;
       margin-bottom: 20px;
     }
 
@@ -51,12 +51,18 @@
     }
 	    img {
       max-width: 67%;
-	  margin-top: 40px;
+	  margin-top: 10px;
       margin-bottom: 20px;
 	  padding: 15px;
       height: auto;
       
     }
+	  .page {
+    border: 2px solid #000; /* Black border for each page */
+    padding: 20px;
+    margin-bottom: 30px;
+    border-radius: 10px;
+  }
   </style>
 </head>
 <body>
@@ -64,28 +70,34 @@
   <h1>ચોપડા જાહેરાત 2025</h1>
 
   <!-- Sections for each page -->
-  <div>
-    <h2>પ્રથમ પેજ</h2>
-	  <img src="https://lh6.googleusercontent.com/Fa5dassKv315DiaCj8dc9Cd7IaaIoKD7rZyOWhA-Bg2c_2S2EY9v84xL94zhjIFnpdL7Mepqva9aPZ74gH1vBAhhnfUTn6Bqx7BE23Fa3YvLtheGSlpBF6wkLytPaCPy2Q=w1280" alt="Image View">
-    <div id="page1" class="grid"></div>
-  </div>
+ <div class="page">
+  <h2>પ્રથમ પેજ</h2>
+  <img src="https://lh6.googleusercontent.com/Fa5dassKv315DiaCj8dc9Cd7IaaIoKD7rZyOWhA-Bg2c_2S2EY9v84xL94zhjIFnpdL7Mepqva9aPZ74gH1vBAhhnfUTn6Bqx7BE23Fa3YvLtheGSlpBF6wkLytPaCPy2Q=w1280" alt="Image View">
+  <div id="page1" class="grid"></div>
   <div class="footer">જાહેરાત સાઇઝ : 105 x 110 mm</div>
-  <div>
-    <h2>બીજું પેજ</h2>
-    <div id="page2" class="grid"></div>
-  </div>
-  <div class="footer">જાહેરાત સાઇઝ : 83 x 43 mm</div>
-  <div>
-    <h2>ત્રીજું પેજ</h2>
-    <div id="page3" class="grid"></div>
-  </div>
-  <div class="footer">જાહેરાત સાઇઝ : 83 x 43 mm</div>
-  <div>
-    <h2>ચોથું પેજ</h2>
-    <div id="page4" class="grid"></div>
-  </div>
+</div>
 
+
+<div class="page">
+  <h2>બીજું પેજ</h2>
+  <div id="page2" class="grid"></div>
   <div class="footer">જાહેરાત સાઇઝ : 83 x 43 mm</div>
+</div>
+
+
+<div class="page">
+  <h2>ત્રીજું પેજ</h2>
+  <div id="page3" class="grid"></div>
+  <div class="footer">જાહેરાત સાઇઝ : 83 x 43 mm</div>
+</div>
+
+
+<div class="page">
+  <h2>ચોથું પેજ</h2>
+  <div id="page4" class="grid"></div>
+  <div class="footer">જાહેરાત સાઇઝ : 83 x 43 mm</div>
+</div>
+
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";

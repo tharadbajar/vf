@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ચોપડા નોધણી</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap & jQuery -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-database.js"></script>
+
+    <style>
+        .container {
+            margin-top: 30px;
+        }
+        h2 {
+            margin-bottom: 20px;
+        }
+        .panel-title {
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .panel-heading {
+            text-align: center;
+        }
+        #searchInput {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h2 class="text text-success text-center">ચોપડા જાહેરાત 2025</h2>
+
+    <div class="container">
+        <input type="text" class="form-control" id="searchInput" placeholder="Search by name, mobile, or address...">
+    </div>
+
+    <div class="container" id="sectionContainer">
+        <!-- Dynamic content will be inserted here -->
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                    <h4 class="modal-title">Edit Data</h4>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editKey" />
+                    <div class="form-group">
+                        <label for="editsection">Section:</label>
+                        <input class="form-control" id="editsection" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label for="editPage">Page Number:</label>
+                        <input type="tel" class="form-control" id="editPage" disabled />
+                    </div>
+                    <div class="form-group">
+                        <label for="editAdNumber">Ad Number:</label>
+                        <input type="tel" class="form-control" id="editAdNumber" disabled />
+                    </div>
+                    <div class="form-group">
+                        <label for="editName">Name:</label>
+                        <input type="text" class="form-control" id="editName" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="editAddress">Address:</label>
+                        <input type="text" class="form-control" id="editAddress" />
+                    </div>
+                    <div class="form-group">
+                        <label for="editMobile">Mobile:</label>
+                        <input type="text" class="form-control" id="editMobile" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="editPrice">Price :</label>
+                        <input type="tel" class="form-control" id="editPrice" disabled />
+                    </div>
+                    <div class="form-group">
+                        <label for="editPayment">Payment:</label>
+                        <select class="form-control" id="editPayment" required>
+                            <option value="બાકી">બાકી</option>
+                            <option value="જમા">જમા</option>
+                        </select>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="updateData()">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyCbdd4NhpHdRUTuXXx8GRs5v1hXJBHYGMI",
+        authDomain: "test-app.firebaseapp.com",
+        databaseURL: "https://test-app-57c54-default-rtdb.firebaseio.com",
+        projectId: "test-app-57c54",
+        storageBucket: "test-app-57c54.appspot.com",
+        messagingSenderId: "983642645709",
+        appId: "1:983642645709:android:8f3137ae6b6717396b7584",
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    function displayData() {
+        firebase.database().ref("adnotebook").on('value', function(snapshot) {
+            const data = snapshot.val();
+            const container = document.getElementById('sectionContainer');
+            container.innerHTML = '';
+
+            const dataBySection = {};
+            for (const key in data) {
+                if (data.hasOwnProperty(key)) {
+                    const entry = { key, ...data[key] };
+                    if (!dataBySection[entry.section]) {
+                        dataBySection[entry.section] = [];
+                    }
+                    dataBySection[entry.section].push(entry);
+                }
+            }
+
+            for (const section in dataBySection) {
+                const sectionId = 'section-' + section.replace(/\s/g, '');
+                const card = document.createElement('div');
+                card.className = 'panel panel-primary';
+
+                const header = document.createElement('div');
+                header.className = 'panel-heading';
+                header.innerHTML = `<h4 class="panel-title" data-toggle="collapse" href="#${sectionId}" style="cursor:pointer">Note Book - ${section}</h4>`;
+                card.appendChild(header);
+
+                const bodyWrapper = document.createElement('div');
+                bodyWrapper.className = 'panel-collapse collapse';
+                bodyWrapper.id = sectionId;
+
+                const table = document.createElement('table');
+                table.className = 'table table-bordered';
+                const thead = document.createElement('thead');
+                thead.innerHTML = `
+                    <tr>
+                        <th>Page</th>
+                        <th>Ad No.</th>
+                        <th>Name</th>
+                        <th>Address</th>
+                        <th>Mobile</th>
+                        <th>Price</th>
+                        <th>Payment</th>
+                        <th>Action</th>
+                    </tr>
+                `;
+                table.appendChild(thead);
+
+                const tbody = document.createElement('tbody');
+
+                dataBySection[section].forEach(entry => {
+                    const row = document.createElement('tr');
+
+                    if (entry.payment === 'બાકી') {
+                        row.style.backgroundColor = '#FFFFC5';
+                    } else if (entry.payment === 'જમા') {
+                        row.style.backgroundColor = '#FFED29';
+                    }
+
+                    row.innerHTML = `
+                        <td>${entry.page}</td>
+                        <td>${entry.adnumber}</td>
+                        <td>${entry.name}</td>
+                        <td>${entry.adaddress}</td>
+                        <td>${entry.mobile}</td>
+                        <td>${entry.price}</td>
+                        <td>${entry.payment}</td>
+                        <td><button class="btn btn-warning btn-sm" onclick="editData('${entry.key}')">Edit</button></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                table.appendChild(tbody);
+                bodyWrapper.appendChild(table);
+                card.appendChild(bodyWrapper);
+                container.appendChild(card);
+            }
+        });
+    }
+
+    function editData(key) {
+        firebase.database().ref("adnotebook/" + key).once('value').then(function(snapshot) {
+            const data = snapshot.val();
+            document.getElementById('editsection').value = data.section;
+            document.getElementById('editKey').value = key;
+            document.getElementById('editName').value = data.name;
+            document.getElementById('editAddress').value = data.adaddress;
+            document.getElementById('editPage').value = data.page;
+            document.getElementById('editAdNumber').value = data.adnumber;
+            document.getElementById('editMobile').value = data.mobile;
+            document.getElementById('editPrice').value = data.price;
+            document.getElementById('editPayment').value = data.payment;
+            $('#editModal').modal('show');
+        });
+    }
+
+    function updateData() {
+        const key = document.getElementById('editKey').value;
+        const name = document.getElementById('editName').value;
+        const adaddress = document.getElementById('editAddress').value;
+        const mobile = document.getElementById('editMobile').value;
+        const price = document.getElementById('editPrice').value;
+        const payment = document.getElementById('editPayment').value;
+
+        const updatedData = { name, adaddress, mobile, price, payment };
+
+        firebase.database().ref("adnotebook/" + key).update(updatedData).then(() => {
+            alert('Data updated successfully!');
+            $('#editModal').modal('hide');
+            displayData();
+        }).catch((error) => {
+            alert('Error: ' + error.message);
+        });
+    }
+
+    document.getElementById("searchInput").addEventListener("keyup", function() {
+        const filter = this.value.toLowerCase();
+        const sections = document.querySelectorAll("#sectionContainer .panel");
+
+        sections.forEach(panel => {
+            let matched = false;
+            const rows = panel.querySelectorAll("tbody tr");
+
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                if (text.includes(filter)) {
+                    row.style.display = "";
+                    matched = true;
+                } else {
+                    row.style.display = "none";
+                }
+            });
+
+            panel.style.display = matched ? "" : "none";
+        });
+    });
+
+    window.onload = displayData;
+</script>
+
+</body>
+</html>

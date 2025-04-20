@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>ચોપડા જાહેરાત 2025</title>
   <style>
-      body {
+    body {
       font-family: Arial, sans-serif;
       background: #fcfce4;
       padding: 20px;
@@ -70,31 +70,55 @@
   <h1>ચોપડા જાહેરાત 2025</h1>
 
   <!-- Sections for each page -->
- <div class="page">
-  <h2>પ્રથમ પેજ</h2>
+<!-- A pages -->
+<div class="page">
+  <h2>A-પ્રથમ પેજ</h2>
   <img src="https://lh6.googleusercontent.com/Fa5dassKv315DiaCj8dc9Cd7IaaIoKD7rZyOWhA-Bg2c_2S2EY9v84xL94zhjIFnpdL7Mepqva9aPZ74gH1vBAhhnfUTn6Bqx7BE23Fa3YvLtheGSlpBF6wkLytPaCPy2Q=w1280" alt="Image View">
-  <div id="page1" class="grid"></div>
+  <div id="pageA1" class="grid"></div>
   <div class="footer">જાહેરાત સાઇઝ : 105 x 110 mm</div>
 </div>
 
-
 <div class="page">
-  <h2>બીજું પેજ</h2>
-  <div id="page2" class="grid"></div>
+  <h2>A-બીજું પેજ</h2>
+  <div id="pageA2" class="grid"></div>
   <div class="footer">જાહેરાત સાઇઝ : 83 x 43 mm</div>
 </div>
 
-
 <div class="page">
-  <h2>ત્રીજું પેજ</h2>
-  <div id="page3" class="grid"></div>
+  <h2>A-ત્રીજું પેજ</h2>
+  <div id="pageA3" class="grid"></div>
   <div class="footer">દાતા શ્રી ની યાદી</div>
 </div>
 
+<div class="page">
+  <h2>A-ચોથું પેજ</h2>
+  <div id="pageA4" class="grid"></div>
+  <div class="footer">જાહેરાત સાઇઝ : 83 x 43 mm</div>
+</div>
+
+<!-- B pages -->
+<div class="page">
+  <h2>B-પ્રથમ પેજ</h2>
+  <img src="https://lh6.googleusercontent.com/Fa5dassKv315DiaCj8dc9Cd7IaaIoKD7rZyOWhA-Bg2c_2S2EY9v84xL94zhjIFnpdL7Mepqva9aPZ74gH1vBAhhnfUTn6Bqx7BE23Fa3YvLtheGSlpBF6wkLytPaCPy2Q=w1280" alt="Image View">
+  <div id="pageB1" class="grid"></div>
+  <div class="footer">જાહેરાત સાઇઝ : 105 x 110 mm</div>
+</div>
 
 <div class="page">
-  <h2>ચોથું પેજ</h2>
-  <div id="page4" class="grid"></div>
+  <h2>B-બીજું પેજ</h2>
+  <div id="pageB2" class="grid"></div>
+  <div class="footer">જાહેરાત સાઇઝ : 83 x 43 mm</div>
+</div>
+
+<div class="page">
+  <h2>B-ત્રીજું પેજ</h2>
+  <div id="pageB3" class="grid"></div>
+  <div class="footer">દાતા શ્રી ની યાદી</div>
+</div>
+
+<div class="page">
+  <h2>B-ચોથું પેજ</h2>
+  <div id="pageB4" class="grid"></div>
   <div class="footer">જાહેરાત સાઇઝ : 83 x 43 mm</div>
 </div>
 
@@ -117,33 +141,47 @@
     const database = getDatabase(app);
     const dbRef = ref(database, 'adnotebook');
 
-    onValue(dbRef, (snapshot) => {
-      const data = snapshot.val();
+  onValue(dbRef, (snapshot) => {
+  const data = snapshot.val();
 
-      // Clear all containers first
-      ["page1", "page2", "page3", "page4"].forEach(id => {
-        document.getElementById(id).innerHTML = '';
+  // Clear all containers first
+  const allPages = ["pageA1", "pageA2", "pageA3", "pageA4", "pageB1", "pageB2", "pageB3", "pageB4"];
+  allPages.forEach(id => {
+    document.getElementById(id).innerHTML = '';
+  });
+
+  // Organize ads by page
+  const pages = {};
+  Object.values(data).forEach(item => {
+    const section = item.section || 'A'; // default A
+    const page = item.page;
+    const containerId = `page${section}${page}`;
+    if (!pages[containerId]) {
+      pages[containerId] = [];
+    }
+    pages[containerId].push(item);
+  });
+
+  // Sort and display ads
+  for (const containerId in pages) {
+    const ads = pages[containerId];
+    const container = document.getElementById(containerId);
+    if (container) {
+      // Sort by adnumber ascending
+      ads.sort((a, b) => Number(a.adnumber) - Number(b.adnumber));
+
+      ads.forEach(item => {
+        const box = document.createElement("div");
+        const isBooked = !!item.mobile;
+        box.className = "box" + (isBooked ? " booked" : "");
+        box.innerHTML = isBooked
+          ? 'Booked'
+          : `જાહેરાત નંબર : ${item.adnumber}<br>${item.price}`;
+        container.appendChild(box);
       });
-
-      // Loop through pages
-      for (let pageNum = 1; pageNum <= 4; pageNum++) {
-        const container = document.getElementById(`page${pageNum}`);
-        const ads = Object.values(data)
-          .filter(item => item.page === pageNum.toString())
-          .sort((a, b) => Number(a.adnumber) - Number(b.adnumber));
-
-        ads.forEach(item => {
-          const box = document.createElement("div");
-          const isBooked = !!item.mobile;
-          box.className = "box" + (isBooked ? " booked" : "");
-          box.innerHTML = isBooked
-            ? 'Booked'
-            : `જાહેરાત નંબર : ${item.adnumber}<br>${item.price}`;
-
-          container.appendChild(box);
-        });
-      }
-    });
+    }
+  }
+});
   </script>
   <!-- Block Print & Right Click -->
 <script>

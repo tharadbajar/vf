@@ -1,0 +1,145 @@
+<!DOCTYPE html> 
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>ચોપડા જાહેરાત 2025 (બાકી Only)</title>
+
+    <!-- Bootstrap & jQuery -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-database.js"></script>
+
+    <style>
+        body {
+            background-color: #f9f9f9;
+        }
+        .container {
+            margin-top: 20px;
+        }
+        h2 {
+            margin-bottom: 20px;
+        }
+        .panel-title {
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .panel-heading {
+            text-align: center;
+        }
+        #searchInput {
+            margin-bottom: 00px;
+        }
+        .table > thead > tr {
+            background-color: #5cb85c;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <h2 class="text text-success text-center">📘 ચોપડા જાહેરાત 2025 (પેમેન્ટ બાકી)</h2>
+
+    <div class="container">
+        <input type="text" class="form-control" id="searchInput" placeholder="Search by name, mobile, or address...">
+        <br>
+
+        <table class="table table-bordered table-hover" id="data-table">
+            <thead>
+                <tr>
+                    <th>ચોપડા નં.</th>
+                    <th>નામ</th>
+                    <th>Mobile</th>
+                    <th>સરનામું</th>                   
+                    <th>રકમ</th>
+                    <th>Call</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                <!-- Rows will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCbdd4NhpHdRUTuXXx8GRs5v1hXJBHYGMI",
+            authDomain: "test-app.firebaseapp.com",
+            databaseURL: "https://test-app-57c54-default-rtdb.firebaseio.com",
+            projectId: "test-app-57c54",
+            storageBucket: "test-app-57c54.appspot.com",
+            messagingSenderId: "983642645709",
+            appId: "1:983642645709:android:8f3137ae6b6717396b7584"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // Load and sort data
+        db.ref('adnotebook').once('value', function(snapshot) {
+            const data = snapshot.val();
+            const tbody = document.getElementById("table-body");
+            let filteredData = [];
+
+            // Step 1: Filter only entries with payment "બાકી"
+            for (let key in data) {
+                const entry = data[key];
+                if (entry.payment === "બાકી") {
+                    filteredData.push(entry);
+                }
+            }
+
+            // Step 2: Sort first by section A-Z, then by price High to Low
+            filteredData.sort(function(a, b) {
+                const sectionA = (a.section || '').toUpperCase();
+                const sectionB = (b.section || '').toUpperCase();
+                if (sectionA < sectionB) return -1;
+                if (sectionA > sectionB) return 1;
+
+                const priceA = parseFloat(a.price) || 0;
+                const priceB = parseFloat(b.price) || 0;
+                return priceB - priceA;
+            });
+
+            // Step 3: Render sorted data
+            filteredData.forEach(entry => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${entry.section || ''}</td>
+                    <td>${entry.name || ''}</td>
+                    <td>${entry.mobile || ''}</td>
+                    <td>${entry.adaddress || ''}</td>
+                    <td>₹${entry.price || ''}</td>
+                    <td><a href="tel:${entry.mobile}" class="btn btn-success btn-sm">Call</a></td>
+                `;
+                tbody.appendChild(row);
+            });
+        });
+
+        // Search functionality
+        $('#searchInput').on('keyup', function () {
+            const value = $(this).val().toLowerCase();
+            $('#table-body tr').filter(function () {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+    </script>
+     </script>
+  <!-- Block Print & Right Click -->
+<script>
+  document.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+      e.preventDefault();
+      alert("Print not allowed!");
+    }
+  });
+  document.addEventListener('contextmenu', e => e.preventDefault());
+</script>
+</body>
+</html>

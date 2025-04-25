@@ -23,16 +23,31 @@
         }
 
         .container {
-            padding: 16px;
+            padding: 10px;
             max-width: 100%;
             box-sizing: border-box;
         }
 
         h2 {
-            font-size: 22px;
+            font-size: 20px;
             text-align: center;
             margin-bottom: 16px;
             color: #4CAF50;
+        }
+
+        h3.section-header {
+            cursor: pointer;
+            background-color: #5cb85c;
+            color: white;
+            padding: 10px;
+            margin-top: 16px;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        h3.section-header.yellow {
+            background-color: #f1c40f !important;
+            color: black;
         }
 
         #searchInput {
@@ -51,6 +66,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-bottom: 20px;
         }
 
         thead tr {
@@ -58,8 +74,13 @@
             color: white;
         }
 
+        thead tr.yellow-head {
+            background-color: #f7dc6f;
+            color: black;
+        }
+
         th, td {
-            padding: 12px 10px;
+            padding: 8px 6px;
             border: 1px solid #ddd;
             font-size: 14px;
             white-space: nowrap;
@@ -69,13 +90,21 @@
             padding: 4px 8px;
         }
 
-        @media screen and (max-width: 100%) {
+        @media screen and (max-width: 768px) {
             h2 {
-                font-size: 20px;
+                font-size: 18px;
             }
 
             th, td {
-                font-size: 13px;
+                font-size: 12px;
+            }
+
+            h3.section-header {
+                font-size: 15px;
+            }
+
+            #searchInput {
+                font-size: 14px;
             }
         }
     </style>
@@ -86,22 +115,8 @@
 
     <div class="container">
         <input type="text" class="form-control" id="searchInput" placeholder="નામ, મોબાઈલ અથવા સરનામું લખો...">
-        <div class="table-container">
-            <table class="table table-bordered table-hover" id="data-table">
-                <thead>
-                    <tr>
-                        <th>ચોપડા નં.</th>
-                        <th>નામ</th>
-                        <th>મોબાઈલ</th>
-                        <th>સરનામું</th>
-                        <th>રકમ</th>
-                        <th>કૉલ કરો</th>
-                    </tr>
-                </thead>
-                <tbody id="table-body">
-                    <!-- Rows will be inserted here -->
-                </tbody>
-            </table>
+        <div id="section-container">
+            <!-- Section wise tables inserted here -->
         </div>
     </div>
 
@@ -117,57 +132,76 @@
             appId: "1:983642645709:android:8f3137ae6b6717396b7584"
         };
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Load and display data
         db.ref('adnotebook').once('value', function(snapshot) {
             const data = snapshot.val();
-            const tbody = document.getElementById("table-body");
-            let filteredData = [];
+            const sectionData = {};
 
             for (let key in data) {
                 const entry = data[key];
                 if (entry.payment === "બાકી") {
-                    filteredData.push(entry);
+                    const section = entry.section || "અજ્ઞાત વિભાગ";
+                    if (!sectionData[section]) {
+                        sectionData[section] = [];
+                    }
+                    sectionData[section].push(entry);
                 }
             }
 
-            filteredData.sort(function(a, b) {
-                const sectionA = (a.section || '').toUpperCase();
-                const sectionB = (b.section || '').toUpperCase();
-                if (sectionA < sectionB) return -1;
-                if (sectionA > sectionB) return 1;
+            const sortedSections = Object.keys(sectionData).sort((a, b) => a.localeCompare(b));
+            const container = document.getElementById("section-container");
 
-                const priceA = parseFloat(a.price) || 0;
-                const priceB = parseFloat(b.price) || 0;
-                return priceB - priceA;
-            });
+            sortedSections.forEach(section => {
+                const sectionId = section.replace(/\s+/g, '_');
+                const isYellow = section.trim().toUpperCase() === "B";
 
-            filteredData.forEach(entry => {
-                const row = document.createElement("tr");
-                row.innerHTML = `
-                    <td>${entry.section || ''}</td>
-                    <td>${entry.name || ''}</td>
-                    <td>${entry.mobile || ''}</td>
-                    <td>${entry.adaddress || ''}</td>
-                    <td>₹${entry.price || ''}</td>
-                    <td><a href="tel:${entry.mobile}" class="btn btn-success btn-sm">Call</a></td>
+                const sectionHTML = `
+                    <div>
+                        <h3 class="section-header ${isYellow ? 'yellow' : ''}" onclick="toggleTable('${sectionId}')">ચોપડા નં. ${section}</h3>
+                        <div id="${sectionId}" style="display: none;" class="table-container">
+                            <table class="table table-bordered table-hover">
+                                <thead>
+                                    <tr class="${isYellow ? 'yellow-head' : ''}">
+                                        <th>ક્રમ</th>
+                                        <th>નામ</th>
+                                        <th>મોબાઈલ</th>                                     
+                                        <th>રકમ</th>
+                                        <th>કૉલ કરો</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${sectionData[section].map((entry, index) => `
+                                        <tr>
+                                            <td>${index + 1}</td>
+                                            <td>${entry.name || ''} <br> ${entry.adaddress || ''}</td>
+                                            <td>${entry.mobile || ''}</td>                                          
+                                            <td>₹${entry.price || ''}</td>
+                                            <td><a href="tel:${entry.mobile}" class="btn btn-success btn-sm">Call</a></td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 `;
-                tbody.appendChild(row);
+                container.insertAdjacentHTML('beforeend', sectionHTML);
             });
         });
 
-        // Search filter
+        function toggleTable(id) {
+            const el = document.getElementById(id);
+            el.style.display = (el.style.display === "none") ? "block" : "none";
+        }
+
         $('#searchInput').on('keyup', function () {
             const value = $(this).val().toLowerCase();
-            $('#table-body tr').filter(function () {
+            $('#section-container tbody tr').filter(function () {
                 $(this).toggle($(this).text().toLowerCase().includes(value));
             });
         });
 
-        // Block print and right-click
         document.addEventListener('keydown', function (e) {
             if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
                 e.preventDefault();
@@ -179,4 +213,4 @@
     </script>
 
 </body>
-</html> 
+</html>
